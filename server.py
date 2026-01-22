@@ -15,7 +15,7 @@ import sys
 
 #配置参数
 PORT = 3000
-BASE_URL = 'http://192.168.1.152:16380'
+BASE_URL = 'http://localhost:16380'
 API_TOKEN = '' # GitLab API令牌，根据实际情况填写
 
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -56,6 +56,26 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         try:
             #构建GitLab API URL
             api_path = self.path[4:]  # 去掉'/api'前缀
+            
+            #检查是否是请求项目数据
+            if api_path == '/projects':
+                print(f"[API模拟] 返回模拟项目数据")
+                
+                #读取模拟数据文件
+                with open('mock_data.json', 'r', encoding='utf-8') as f:
+                    mock_data = json.load(f)
+                
+                #设置响应头
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                
+                #返回模拟数据
+                self.wfile.write(json.dumps(mock_data).encode())
+                return
+            
+            #其他API请求继续转发
             gitlab_url = f"{BASE_URL}{api_path}"
             
             print(f"[API代理] 转发到: {gitlab_url}")
@@ -101,16 +121,23 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         #设置静态文件目录
         static_dir = 'public' if os.path.exists('public') else '.'
         
+        #处理路径，移除查询参数
+        path = self.path.split('?')[0]
+        
         #处理根路径
-        if self.path == '/':
-            self.path = '/index.html'
+        if path == '/':
+            path = '/index.html'
         
         #构建文件路径
-        file_path = os.path.join(static_dir, self.path[1:])  # 去掉开头的'/'
+        file_path = os.path.join(static_dir, path[1:])  # 去掉开头的'/'
+        
+        #记录处理后的路径
+        print(f"[静态文件] 处理路径: {path} -> {file_path}")
         
         #如果文件不存在，尝试在当前目录查找
         if not (os.path.exists(file_path) and os.path.isfile(file_path)) and static_dir == 'public':
-            file_path = os.path.join('.', self.path[1:])
+            file_path = os.path.join('.', path[1:])
+            print(f"[静态文件] 尝试当前目录: {file_path}")
         
         #检查文件是否存在
         if os.path.exists(file_path) and os.path.isfile(file_path):

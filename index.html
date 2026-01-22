@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug统计系统 - Python服务器测试</title>
+    <title>Bug统计系统</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -49,11 +49,213 @@
         button:hover {
             background-color: #0056b3;
         }
+        .time-display {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #666;
+            font-weight: bold;
+        }
+        .project-section {
+            margin-top: 30px;
+        }
+        .project-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+        }
+        .project-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .bug-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .bug-stat-item {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 4px;
+            min-width: 120px;
+        }
+        .bug-stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .bug-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .severity-stats {
+            margin-top: 15px;
+        }
+        .severity-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .severity-label {
+            width: 80px;
+            font-size: 14px;
+        }
+        .severity-bar {
+            flex: 1;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+        .severity-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+        .severity-count {
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 30px;
+        }
+        .severity-high {
+            background-color: #dc3545;
+        }
+        .severity-medium {
+            background-color: #ffc107;
+        }
+        .severity-low {
+            background-color: #28a745;
+        }
+        
+        /* 模拟数据统计样式 */
+        .stats-container {
+            margin-top: 20px;
+        }
+        
+        .project-stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .project-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .project-stat-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .priority-high {
+            background-color: rgba(220, 53, 69, 0.2);
+            border-left: 4px solid #dc3545;
+        }
+        
+        .priority-medium {
+            background-color: rgba(255, 193, 7, 0.2);
+            border-left: 4px solid #ffc107;
+        }
+        
+        .priority-low {
+            background-color: rgba(40, 167, 69, 0.2);
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-open {
+            background-color: rgba(0, 123, 255, 0.2);
+            border-left: 4px solid #007bff;
+        }
+        
+        .status-closed {
+            background-color: rgba(40, 167, 69, 0.2);
+            border-left: 4px solid #28a745;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+        
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+        
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+        
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+        
+        .delay-5 {
+            animation-delay: 0.5s;
+        }
+        
+        .delay-6 {
+            animation-delay: 0.6s;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bug统计系统 - Python服务器测试</h1>
+        <div class="time-display" id="currentTime"></div>
+        <h1>Bug统计系统</h1>
         
         <div id="status">
             <div class="status success">
@@ -73,9 +275,131 @@
         </div>
         
         <div id="result" style="margin-top: 20px;"></div>
+        
+        <div class="project-section">
+            <h2>工程Bug统计</h2>
+            <div id="projectsContainer"></div>
+        </div>
     </div>
 
     <script>
+        // 模拟工程和bug数据
+        const projectsData = [
+            {
+                id: 1,
+                name: "Web应用项目",
+                bugCount: 15,
+                severity: {
+                    high: 3,
+                    medium: 8,
+                    low: 4
+                }
+            },
+            {
+                id: 2,
+                name: "移动应用项目",
+                bugCount: 22,
+                severity: {
+                    high: 5,
+                    medium: 12,
+                    low: 5
+                }
+            },
+            {
+                id: 3,
+                name: "后端服务项目",
+                bugCount: 8,
+                severity: {
+                    high: 1,
+                    medium: 4,
+                    low: 3
+                }
+            }
+        ];
+        
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        
+        // 初始化时间显示并设置定时器
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+        
+        // 渲染工程和bug信息
+        function renderProjects() {
+            const container = document.getElementById('projectsContainer');
+            container.innerHTML = '';
+            
+            projectsData.forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                
+                // 计算总bug数和严重级别百分比
+                const totalBugs = project.bugCount;
+                const highPercent = (project.severity.high / totalBugs) * 100;
+                const mediumPercent = (project.severity.medium / totalBugs) * 100;
+                const lowPercent = (project.severity.low / totalBugs) * 100;
+                
+                projectCard.innerHTML = `
+                    <div class="project-header">${project.name}</div>
+                    <div class="bug-stats">
+                        <div class="bug-stat-item">
+                            <div class="bug-stat-label">总Bug数</div>
+                            <div class="bug-stat-value">${totalBugs}</div>
+                        </div>
+                        <div class="bug-stat-item">
+                            <div class="bug-stat-label">严重</div>
+                            <div class="bug-stat-value">${project.severity.high}</div>
+                        </div>
+                        <div class="bug-stat-item">
+                            <div class="bug-stat-label">中等</div>
+                            <div class="bug-stat-value">${project.severity.medium}</div>
+                        </div>
+                        <div class="bug-stat-item">
+                            <div class="bug-stat-label">轻微</div>
+                            <div class="bug-stat-value">${project.severity.low}</div>
+                        </div>
+                    </div>
+                    <div class="severity-stats">
+                        <div class="severity-item">
+                            <div class="severity-label">严重</div>
+                            <div class="severity-bar">
+                                <div class="severity-fill severity-high" style="width: ${highPercent}%"></div>
+                            </div>
+                            <div class="severity-count">${project.severity.high}</div>
+                        </div>
+                        <div class="severity-item">
+                            <div class="severity-label">中等</div>
+                            <div class="severity-bar">
+                                <div class="severity-fill severity-medium" style="width: ${mediumPercent}%"></div>
+                            </div>
+                            <div class="severity-count">${project.severity.medium}</div>
+                        </div>
+                        <div class="severity-item">
+                            <div class="severity-label">轻微</div>
+                            <div class="severity-bar">
+                                <div class="severity-fill severity-low" style="width: ${lowPercent}%"></div>
+                            </div>
+                            <div class="severity-count">${project.severity.low}</div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(projectCard);
+            });
+        }
+        
+        // 测试静态文件服务
         function testStaticFile() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = '<div class="status">测试静态文件服务...</div>';
@@ -93,6 +417,7 @@
                 });
         }
         
+        // 测试API代理服务
         function testApiProxy() {
             const resultDiv = document.getElementById('result');
             const apiStatus = document.getElementById('apiStatus');
@@ -103,14 +428,62 @@
             fetch('/api/projects')
                 .then(response => {
                     if (response.ok) {
-                        apiStatus.className = 'status success';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 正常';
-                        resultDiv.innerHTML = '<div class="status success">API代理服务正常 - 状态码: ' + response.status + '</div>';
+                        return response.json();
                     } else {
-                        apiStatus.className = 'status error';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 异常 (GitLab可能无法访问)';
-                        resultDiv.innerHTML = '<div class="status error">API代理服务异常 - 状态码: ' + response.status + '</div>';
+                        throw new Error('API请求失败');
                     }
+                })
+                .then(data => {
+                    apiStatus.className = 'status success';
+                    apiStatus.innerHTML = '<strong>API代理服务:</strong> 正常';
+                    
+                    // 统计数据
+                    let statsHtml = '<div class="status success">API代理服务正常 - 模拟数据统计:</div>';
+                    statsHtml += '<div class="stats-container">';
+                    
+                    data.projects.forEach((project, projectIndex) => {
+                        const totalBugs = project.bugs.length;
+                        const highBugs = project.bugs.filter(bug => bug.priority === 'high').length;
+                        const mediumBugs = project.bugs.filter(bug => bug.priority === 'medium').length;
+                        const lowBugs = project.bugs.filter(bug => bug.priority === 'low').length;
+                        const openBugs = project.bugs.filter(bug => bug.status === 'open').length;
+                        const closedBugs = project.bugs.filter(bug => bug.status === 'closed').length;
+                        
+                        statsHtml += `
+                            <div class="project-stat-card fade-in-up delay-${projectIndex + 1}">
+                                <div class="project-stat-header">${project.name}</div>
+                                <div class="stat-grid">
+                                    <div class="stat-item fade-in-up delay-${projectIndex * 6 + 1}">
+                                        <div class="stat-label">总Bug数</div>
+                                        <div class="stat-value">${totalBugs}</div>
+                                    </div>
+                                    <div class="stat-item priority-high fade-in-up delay-${projectIndex * 6 + 2}">
+                                        <div class="stat-label">严重</div>
+                                        <div class="stat-value">${highBugs}</div>
+                                    </div>
+                                    <div class="stat-item priority-medium fade-in-up delay-${projectIndex * 6 + 3}">
+                                        <div class="stat-label">中等</div>
+                                        <div class="stat-value">${mediumBugs}</div>
+                                    </div>
+                                    <div class="stat-item priority-low fade-in-up delay-${projectIndex * 6 + 4}">
+                                        <div class="stat-label">轻微</div>
+                                        <div class="stat-value">${lowBugs}</div>
+                                    </div>
+                                    <div class="stat-item status-open fade-in-up delay-${projectIndex * 6 + 5}">
+                                        <div class="stat-label">未解决</div>
+                                        <div class="stat-value">${openBugs}</div>
+                                    </div>
+                                    <div class="stat-item status-closed fade-in-up delay-${projectIndex * 6 + 6}">
+                                        <div class="stat-label">已解决</div>
+                                        <div class="stat-value">${closedBugs}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    statsHtml += '</div>';
+                    resultDiv.innerHTML = statsHtml;
                 })
                 .catch(error => {
                     apiStatus.className = 'status error';
@@ -118,6 +491,11 @@
                     resultDiv.innerHTML = '<div class="status error">API代理服务错误: ' + error + '</div>';
                 });
         }
+        
+        // 页面加载完成后渲染项目数据
+        window.onload = function() {
+            renderProjects();
+        };
     </script>
 </body>
 </html>
