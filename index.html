@@ -73,9 +73,122 @@
         </div>
         
         <div id="result" style="margin-top: 20px;"></div>
+        
+        <!-- 时间显示区域 -->
+        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
+            <h2>当前时间</h2>
+            <div id="currentTime" style="font-size: 18px; font-weight: bold;"></div>
+        </div>
+        
+        <!-- 工程和Bug信息区域 -->
+        <div style="margin-top: 20px;">
+            <h2>工程Bug统计</h2>
+            <div id="projectsContainer"></div>
+        </div>
     </div>
 
     <script>
+        // 模拟工程和Bug数据
+        const projectsData = [
+            {
+                id: 1,
+                name: '项目A',
+                totalBugs: 15,
+                bugsBySeverity: {
+                    critical: 2,
+                    high: 5,
+                    medium: 6,
+                    low: 2
+                }
+            },
+            {
+                id: 2,
+                name: '项目B',
+                totalBugs: 8,
+                bugsBySeverity: {
+                    critical: 1,
+                    high: 2,
+                    medium: 3,
+                    low: 2
+                }
+            },
+            {
+                id: 3,
+                name: '项目C',
+                totalBugs: 22,
+                bugsBySeverity: {
+                    critical: 4,
+                    high: 7,
+                    medium: 8,
+                    low: 3
+                }
+            }
+        ];
+        
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        
+        // 显示工程和Bug信息
+        function displayProjects() {
+            const container = document.getElementById('projectsContainer');
+            container.innerHTML = '';
+            
+            projectsData.forEach(project => {
+                const projectDiv = document.createElement('div');
+                projectDiv.style.cssText = `
+                    margin: 10px 0;
+                    padding: 15px;
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                    border-left: 4px solid #007bff;
+                `;
+                
+                const projectName = document.createElement('h3');
+                projectName.textContent = project.name;
+                projectName.style.marginTop = '0';
+                
+                const totalBugs = document.createElement('p');
+                totalBugs.innerHTML = `<strong>总Bug数:</strong> ${project.totalBugs}`;
+                
+                const severityTitle = document.createElement('p');
+                severityTitle.innerHTML = '<strong>严重级别分布:</strong>';
+                
+                const severityList = document.createElement('ul');
+                severityList.style.marginTop = '5px';
+                
+                const severityLevels = [
+                    { key: 'critical', name: '严重', color: '#dc3545' },
+                    { key: 'high', name: '高', color: '#fd7e14' },
+                    { key: 'medium', name: '中', color: '#ffc107' },
+                    { key: 'low', name: '低', color: '#28a745' }
+                ];
+                
+                severityLevels.forEach(level => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span style="color: ${level.color};">${level.name}:</span> ${project.bugsBySeverity[level.key]}`;
+                    severityList.appendChild(li);
+                });
+                
+                projectDiv.appendChild(projectName);
+                projectDiv.appendChild(totalBugs);
+                projectDiv.appendChild(severityTitle);
+                projectDiv.appendChild(severityList);
+                
+                container.appendChild(projectDiv);
+            });
+        }
+        
         function testStaticFile() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = '<div class="status">测试静态文件服务...</div>';
@@ -99,18 +212,116 @@
             
             resultDiv.innerHTML = '<div class="status">测试API代理服务...</div>';
             
-            // 测试一个简单的API端点
+            // 调用API获取Excel数据统计
             fetch('/api/projects')
                 .then(response => {
                     if (response.ok) {
-                        apiStatus.className = 'status success';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 正常';
-                        resultDiv.innerHTML = '<div class="status success">API代理服务正常 - 状态码: ' + response.status + '</div>';
+                        return response.json();
                     } else {
-                        apiStatus.className = 'status error';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 异常 (GitLab可能无法访问)';
-                        resultDiv.innerHTML = '<div class="status error">API代理服务异常 - 状态码: ' + response.status + '</div>';
+                        throw new Error('API请求失败');
                     }
+                })
+                .then(data => {
+                    apiStatus.className = 'status success';
+                    apiStatus.innerHTML = '<strong>API代理服务:</strong> 正常';
+                    
+                    // 显示统计数据
+                    let html = '<div class="status success">API代理服务正常 - 成功读取Excel数据</div>';
+                    html += '<h3>Bug统计数据</h3>';
+                    html += `<div style="margin: 10px 0; padding: 15px; background-color: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3;">`;
+                    html += `<p style="font-size: 16px;"><strong>总Bug数:</strong> <span style="font-weight: normal; color: #1976d2;">${data.total_bugs}</span></p>`;
+                    html += `</div>`;
+                    html += '<h4>项目统计</h4>';
+                    
+                    // 遍历每个项目
+                    for (const [projectName, projectData] of Object.entries(data.projects)) {
+                        html += `<div style="margin: 15px 0; padding: 20px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">`;
+                        html += `<h5 style="color: #333; margin-top: 0; margin-bottom: 15px; font-size: 18px;">${projectName}</h5>`;
+                        html += `<p style="margin-bottom: 10px;"><strong>Bug数:</strong> <span style="color: #666;">${projectData.total_bugs}</span></p>`;
+                        
+                        // 优先级分布
+                        html += `<div style="margin-bottom: 15px;">`;
+                        html += `<p style="margin-bottom: 5px;"><strong>优先级分布:</strong></p>`;
+                        html += `<div style="display: flex; gap: 10px;">`;
+                        for (const [priority, count] of Object.entries(projectData.bugs_by_priority)) {
+                            let color = '';
+                            switch(priority) {
+                                case '高': color = '#f44336'; break;
+                                case '中': color = '#ff9800'; break;
+                                case '低': color = '#4caf50'; break;
+                            }
+                            html += `<div style="flex: 1; padding: 8px; background-color: ${color}20; border-radius: 4px; text-align: center;">`;
+                            html += `<span style="color: ${color}; font-weight: bold;">${priority}</span>: `;
+                            html += `<span>${count}</span>`;
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                        html += `</div>`;
+                        
+                        // 状态分布
+                        html += `<div style="margin-bottom: 15px;">`;
+                        html += `<p style="margin-bottom: 5px;"><strong>状态分布:</strong></p>`;
+                        html += `<div style="display: flex; gap: 10px;">`;
+                        for (const [status, count] of Object.entries(projectData.bugs_by_status)) {
+                            let color = '';
+                            switch(status) {
+                                case '未解决': color = '#f44336'; break;
+                                case '进行中': color = '#ff9800'; break;
+                                case '已解决': color = '#4caf50'; break;
+                            }
+                            html += `<div style="flex: 1; padding: 8px; background-color: ${color}20; border-radius: 4px; text-align: center;">`;
+                            html += `<span style="color: ${color}; font-weight: bold;">${status}</span>: `;
+                            html += `<span>${count}</span>`;
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                        html += `</div>`;
+                        
+                        // Bug列表
+                        html += `<div style="margin-top: 15px;">`;
+                        html += `<p style="margin-bottom: 10px;"><strong>Bug列表:</strong></p>`;
+                        html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">`;
+                        html += `<table style="width: 100%; border-collapse: collapse;">`;
+                        html += `<thead style="background-color: #f5f5f5; position: sticky; top: 0;">`;
+                        html += `<tr>`;
+                        html += `<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">Bug ID</th>`;
+                        html += `<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">标题</th>`;
+                        html += `<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">优先级</th>`;
+                        html += `<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">状态</th>`;
+                        html += `</tr>`;
+                        html += `</thead>`;
+                        html += `<tbody>`;
+                        projectData.bugs.forEach(bug => {
+                            let priorityColor = '';
+                            switch(bug.priority) {
+                                case '高': priorityColor = '#f44336'; break;
+                                case '中': priorityColor = '#ff9800'; break;
+                                case '低': priorityColor = '#4caf50'; break;
+                            }
+                            
+                            let statusColor = '';
+                            switch(bug.status) {
+                                case '未解决': statusColor = '#f44336'; break;
+                                case '进行中': statusColor = '#ff9800'; break;
+                                case '已解决': statusColor = '#4caf50'; break;
+                            }
+                            
+                            html += `<tr style="border-bottom: 1px solid #f0f0f0;">`;
+                            html += `<td style="padding: 10px;">${bug.id}</td>`;
+                            html += `<td style="padding: 10px;">${bug.title}</td>`;
+                            html += `<td style="padding: 10px;"><span style="color: ${priorityColor};">${bug.priority}</span></td>`;
+                            html += `<td style="padding: 10px;"><span style="color: ${statusColor};">${bug.status}</span></td>`;
+                            html += `</tr>`;
+                        });
+                        html += `</tbody>`;
+                        html += `</table>`;
+                        html += `</div>`;
+                        html += `</div>`;
+                        
+                        html += `</div>`;
+                    }
+                    
+                    resultDiv.innerHTML = html;
                 })
                 .catch(error => {
                     apiStatus.className = 'status error';
@@ -118,6 +329,16 @@
                     resultDiv.innerHTML = '<div class="status error">API代理服务错误: ' + error + '</div>';
                 });
         }
+        
+        // 初始化
+        window.onload = function() {
+            // 初始更新时间
+            updateCurrentTime();
+            // 每秒更新时间
+            setInterval(updateCurrentTime, 1000);
+            // 显示工程和Bug信息
+            displayProjects();
+        };
     </script>
 </body>
 </html>
