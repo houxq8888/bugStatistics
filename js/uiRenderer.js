@@ -190,10 +190,28 @@ class UIRenderer {
 
         const listContainer = this.createElement('div', 'bug-list-container');
         
+        // 保存筛选面板的当前显示状态
+        const filterPanel = document.getElementById('filterPanel');
+        const filterPanelVisible = filterPanel ? filterPanel.style.display === 'block' : false;
+        
+        // 保存当前的筛选值
+        const statusOpen = document.getElementById('filterStatusOpen')?.checked ?? true;
+        const statusClosed = document.getElementById('filterStatusClosed')?.checked ?? true;
+        const priorityHigh = document.getElementById('filterPriorityHigh')?.checked ?? true;
+        const priorityMedium = document.getElementById('filterPriorityMedium')?.checked ?? true;
+        const priorityLow = document.getElementById('filterPriorityLow')?.checked ?? true;
+        const startDate = document.getElementById('filterStartDate')?.value ?? '';
+        const endDate = document.getElementById('filterEndDate')?.value ?? '';
+        
         listContainer.innerHTML = `
             <div class="bug-list-header">
                 <div class="bug-list-title-section">
-                    <h2>${title}</h2>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <button class="back-button" onclick="app.showDashboard()">
+                            <span class="back-icon">←</span> 返回仪表盘
+                        </button>
+                        <h2>${title}</h2>
+                    </div>
                     <div class="bug-list-stats">
                         <span class="stat-badge total">总计: ${bugs.length}</span>
                         <span class="stat-badge high">严重: ${bugs.filter(b => b.priority === 'high').length}</span>
@@ -216,16 +234,16 @@ class UIRenderer {
                     </button>
                 </div>
             </div>
-            <div class="filter-panel" id="filterPanel" style="display: none;">
+            <div class="filter-panel" id="filterPanel" style="display: ${filterPanelVisible ? 'block' : 'none'};">
                 <div class="filter-section">
                     <h4>状态</h4>
                     <div class="filter-options">
                         <label class="filter-option">
-                            <input type="checkbox" id="filterStatusOpen" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterStatusOpen" onchange="app.applyFilters()" ${statusOpen ? 'checked' : ''}>
                             <span>未解决</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterStatusClosed" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterStatusClosed" onchange="app.applyFilters()" ${statusClosed ? 'checked' : ''}>
                             <span>已解决</span>
                         </label>
                     </div>
@@ -234,15 +252,15 @@ class UIRenderer {
                     <h4>优先级</h4>
                     <div class="filter-options">
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityHigh" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityHigh" onchange="app.applyFilters()" ${priorityHigh ? 'checked' : ''}>
                             <span>严重</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityMedium" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityMedium" onchange="app.applyFilters()" ${priorityMedium ? 'checked' : ''}>
                             <span>中等</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityLow" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityLow" onchange="app.applyFilters()" ${priorityLow ? 'checked' : ''}>
                             <span>轻微</span>
                         </label>
                     </div>
@@ -252,11 +270,11 @@ class UIRenderer {
                     <div class="filter-options">
                         <div class="date-filter">
                             <label>开始日期</label>
-                            <input type="date" id="filterStartDate" onchange="app.applyFilters()">
+                            <input type="date" id="filterStartDate" onchange="app.applyFilters()" value="${startDate}">
                         </div>
                         <div class="date-filter">
                             <label>结束日期</label>
-                            <input type="date" id="filterEndDate" onchange="app.applyFilters()">
+                            <input type="date" id="filterEndDate" onchange="app.applyFilters()" value="${endDate}">
                         </div>
                     </div>
                 </div>

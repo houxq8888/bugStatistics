@@ -180,6 +180,7 @@ class BugStatsApp {
 
     showProjectDetails(projectId) {
         this.currentView = 'projectDetails';
+        this.currentProjectId = projectId;
         this.renderHeader();
         
         // 优先从allProjects中获取bug数据，确保与仪表盘数据一致
@@ -242,11 +243,11 @@ class BugStatsApp {
     applyFilters() {
         if (!this.allBugs) return;
 
-        const statusOpen = document.getElementById('filterStatusOpen')?.checked;
-        const statusClosed = document.getElementById('filterStatusClosed')?.checked;
-        const priorityHigh = document.getElementById('filterPriorityHigh')?.checked;
-        const priorityMedium = document.getElementById('filterPriorityMedium')?.checked;
-        const priorityLow = document.getElementById('filterPriorityLow')?.checked;
+        const statusOpen = document.getElementById('filterStatusOpen')?.checked ?? true;
+        const statusClosed = document.getElementById('filterStatusClosed')?.checked ?? true;
+        const priorityHigh = document.getElementById('filterPriorityHigh')?.checked ?? true;
+        const priorityMedium = document.getElementById('filterPriorityMedium')?.checked ?? true;
+        const priorityLow = document.getElementById('filterPriorityLow')?.checked ?? true;
         const startDate = document.getElementById('filterStartDate')?.value;
         const endDate = document.getElementById('filterEndDate')?.value;
 

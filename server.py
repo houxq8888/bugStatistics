@@ -354,19 +354,31 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.handle_get_projects_stats(query_params)
             # 获取项目详情
             elif endpoint.startswith('/projects/') and endpoint.endswith('/issues'):
-                project_id = int(endpoint.split('/')[2])
-                self.handle_get_project_issues(project_id, query_params)
+                try:
+                    project_id = int(endpoint.split('/')[2])
+                    self.handle_get_project_issues(project_id, query_params)
+                except (ValueError, IndexError):
+                    logger.error(f"[无效的项目ID] {endpoint}")
+                    self.send_json_response({'error': '无效的项目ID'}, 400)
             # 获取项目趋势
             elif endpoint.startswith('/projects/') and endpoint.endswith('/trends'):
-                project_id = int(endpoint.split('/')[2])
-                self.handle_get_project_trends(project_id, query_params)
+                try:
+                    project_id = int(endpoint.split('/')[2])
+                    self.handle_get_project_trends(project_id, query_params)
+                except (ValueError, IndexError):
+                    logger.error(f"[无效的项目ID] {endpoint}")
+                    self.send_json_response({'error': '无效的项目ID'}, 400)
             # 获取所有项目列表（从数据库）
             elif endpoint == '/db/projects':
                 self.handle_get_db_projects()
             # 获取项目Bug列表（从数据库）
             elif endpoint.startswith('/db/projects/') and endpoint.endswith('/bugs'):
-                project_id = int(endpoint.split('/')[3])
-                self.handle_get_db_project_bugs(project_id, query_params)
+                try:
+                    project_id = int(endpoint.split('/')[3])
+                    self.handle_get_db_project_bugs(project_id, query_params)
+                except (ValueError, IndexError):
+                    logger.error(f"[无效的项目ID] {endpoint}")
+                    self.send_json_response({'error': '无效的项目ID'}, 400)
             # 用户注册
             elif endpoint == '/auth/register':
                 self.handle_register()
@@ -384,8 +396,12 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.handle_list_users()
             # 更新用户角色
             elif endpoint.startswith('/auth/users/') and endpoint.endswith('/role'):
-                user_id = int(endpoint.split('/')[3])
-                self.handle_update_user_role(user_id)
+                try:
+                    user_id = int(endpoint.split('/')[3])
+                    self.handle_update_user_role(user_id)
+                except (ValueError, IndexError):
+                    logger.error(f"[无效的用户ID] {endpoint}")
+                    self.send_json_response({'error': '无效的用户ID'}, 400)
             # 清除缓存
             elif endpoint == '/cache/clear':
                 CacheManager.clear()
