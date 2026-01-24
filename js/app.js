@@ -180,6 +180,7 @@ class BugStatsApp {
 
     async showProjectDetails(projectId) {
         this.currentView = 'projectDetails';
+        this.currentProjectId = projectId;
         this.renderHeader();
         
         try {

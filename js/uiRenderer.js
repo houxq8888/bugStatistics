@@ -305,6 +305,29 @@ class UIRenderer {
         if (newPanel) {
             newPanel.style.display = isPanelVisible ? 'block' : 'none';
         }
+        
+        // 确保筛选值正确设置
+        if (document.getElementById('filterStatusOpen')) {
+            document.getElementById('filterStatusOpen').checked = filterValues.statusOpen;
+        }
+        if (document.getElementById('filterStatusClosed')) {
+            document.getElementById('filterStatusClosed').checked = filterValues.statusClosed;
+        }
+        if (document.getElementById('filterPriorityHigh')) {
+            document.getElementById('filterPriorityHigh').checked = filterValues.priorityHigh;
+        }
+        if (document.getElementById('filterPriorityMedium')) {
+            document.getElementById('filterPriorityMedium').checked = filterValues.priorityMedium;
+        }
+        if (document.getElementById('filterPriorityLow')) {
+            document.getElementById('filterPriorityLow').checked = filterValues.priorityLow;
+        }
+        if (document.getElementById('filterStartDate')) {
+            document.getElementById('filterStartDate').value = filterValues.startDate;
+        }
+        if (document.getElementById('filterEndDate')) {
+            document.getElementById('filterEndDate').value = filterValues.endDate;
+        }
     }
 
     renderBugItem(bug) {

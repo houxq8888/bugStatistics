@@ -354,11 +354,19 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.handle_get_projects_stats(query_params)
             # 获取项目详情
             elif endpoint.startswith('/projects/') and endpoint.endswith('/issues'):
-                project_id = int(endpoint.split('/')[2])
+                project_id_str = endpoint.split('/')[2]
+                if not project_id_str.isdigit():
+                    self.send_json_response({'error': '无效的项目ID'}, 400)
+                    return
+                project_id = int(project_id_str)
                 self.handle_get_project_issues(project_id, query_params)
             # 获取项目趋势
             elif endpoint.startswith('/projects/') and endpoint.endswith('/trends'):
-                project_id = int(endpoint.split('/')[2])
+                project_id_str = endpoint.split('/')[2]
+                if not project_id_str.isdigit():
+                    self.send_json_response({'error': '无效的项目ID'}, 400)
+                    return
+                project_id = int(project_id_str)
                 self.handle_get_project_trends(project_id, query_params)
             # 获取所有项目列表（从数据库）
             elif endpoint == '/db/projects':
