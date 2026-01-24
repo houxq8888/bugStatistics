@@ -435,7 +435,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             if not projects:
                 logger.warning("[GitLab API不可用，使用模拟数据] 未获取到项目数据")
-                self.send_json_response(self.get_mock_projects_stats())
+                mock_data = self.get_mock_projects_stats()
+                self.save_mock_data_to_db(mock_data['projects'])
+                self.send_json_response(mock_data)
                 return
             
             projects_with_stats = []
@@ -502,7 +504,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
             if not projects_with_stats:
                 logger.warning("[GitLab API不可用，使用模拟数据] 未获取到项目统计数据")
-                self.send_json_response(self.get_mock_projects_stats())
+                mock_data = self.get_mock_projects_stats()
+                self.save_mock_data_to_db(mock_data['projects'])
+                self.send_json_response(mock_data)
                 return
             
             # 检查并发送邮件告警
@@ -512,7 +516,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             
         except GitLabAPIError as e:
             logger.warning(f"[GitLab API不可用，使用模拟数据] {str(e)}")
-            self.send_json_response(self.get_mock_projects_stats())
+            mock_data = self.get_mock_projects_stats()
+            self.save_mock_data_to_db(mock_data['projects'])
+            self.send_json_response(mock_data)
         except Exception as e:
             logger.error(f"[获取项目统计错误] {str(e)}")
             self.send_json_response({'error': str(e)}, 500)
@@ -523,35 +529,136 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             state = params.get('state')
             labels = params.get('labels')
             
+            # 尝试从GitLab API获取数据
             issues = gitlab_client.get_issues(project_id, state, labels)
             
-            formatted_issues = []
-            for issue in issues:
-                priority = 'high' if 'critical' in issue.get('labels', '').lower() else \
-                          'medium' if 'bug' in issue.get('labels', '').lower() else 'low'
-                formatted_issues.append({
-                    'id': issue.get('id'),
-                    'iid': issue.get('iid'),
-                    'title': issue.get('title'),
-                    'description': issue.get('description'),
-                    'priority': priority,
-                    'status': 'open' if issue.get('state') == 'opened' else 'closed',
-                    'created_at': issue.get('created_at'),
-                    'updated_at': issue.get('updated_at'),
-                    'web_url': issue.get('web_url'),
-                    'labels': issue.get('labels', '').split(',') if issue.get('labels') else []
-                })
+            if issues:
+                formatted_issues = []
+                for issue in issues:
+                    priority = 'high' if 'critical' in issue.get('labels', '').lower() else \
+                              'medium' if 'bug' in issue.get('labels', '').lower() else 'low'
+                    formatted_issues.append({
+                        'id': issue.get('id'),
+                        'iid': issue.get('iid'),
+                        'title': issue.get('title'),
+                        'description': issue.get('description'),
+                        'priority': priority,
+                        'status': 'open' if issue.get('state') == 'opened' else 'closed',
+                        'created_at': issue.get('created_at'),
+                        'updated_at': issue.get('updated_at'),
+                        'web_url': issue.get('web_url'),
+                        'labels': issue.get('labels', '').split(',') if issue.get('labels') else []
+                    })
+                
+                self.send_json_response({'issues': formatted_issues})
+            else:
+                # 从数据库获取数据
+                db_project = db_manager.get_project_by_gitlab_id(project_id)
+                if db_project:
+                    # 转换参数：state -> status, labels -> 不使用（数据库不支持按labels过滤）
+                    status = 'open' if state == 'opened' else state if state else None
+                    db_bugs = db_manager.get_project_bugs(db_project['id'], status)
+                    # 格式化数据库中的bug数据
+                    formatted_bugs = []
+                    for bug in db_bugs:
+                        formatted_bugs.append({
+                            'id': bug.get('gitlab_bug_id'),
+                            'iid': bug.get('gitlab_bug_id'),
+                            'title': bug.get('title'),
+                            'description': '',
+                            'priority': bug.get('priority'),
+                            'status': bug.get('status'),
+                            'created_at': bug.get('created_at'),
+                            'updated_at': bug.get('updated_at'),
+                            'web_url': bug.get('web_url'),
+                            'labels': bug.get('labels', [])
+                        })
+                    
+                    if formatted_bugs:
+                        self.send_json_response({'issues': formatted_bugs})
+                    else:
+                        # 使用模拟数据
+                        mock_data = self.get_mock_projects_stats()
+                        for project in mock_data['projects']:
+                            if project['id'] == project_id:
+                                self.send_json_response({'issues': project.get('bugs', [])})
+                                return
+                        # 如果找不到对应项目的模拟数据，返回空列表
+                        self.send_json_response({'issues': []})
+                else:
+                    # 使用模拟数据
+                    mock_data = self.get_mock_projects_stats()
+                    for project in mock_data['projects']:
+                        if project['id'] == project_id:
+                            self.send_json_response({'issues': project.get('bugs', [])})
+                            return
+                    # 如果找不到对应项目的模拟数据，返回空列表
+                    self.send_json_response({'issues': []})
             
-            self.send_json_response({'issues': formatted_issues})
-            
+        except GitLabAPIError as e:
+            logger.warning(f"[GitLab API不可用，使用数据库或模拟数据] {str(e)}")
+            # 从数据库获取数据
+            db_project = db_manager.get_project_by_gitlab_id(project_id)
+            if db_project:
+                # 转换参数：state -> status, labels -> 不使用（数据库不支持按labels过滤）
+                status = 'open' if state == 'opened' else state if state else None
+                db_bugs = db_manager.get_project_bugs(db_project['id'], status)
+                # 格式化数据库中的bug数据
+                formatted_bugs = []
+                for bug in db_bugs:
+                    formatted_bugs.append({
+                        'id': bug.get('gitlab_bug_id'),
+                        'iid': bug.get('gitlab_bug_id'),
+                        'title': bug.get('title'),
+                        'description': '',
+                        'priority': bug.get('priority'),
+                        'status': bug.get('status'),
+                        'created_at': bug.get('created_at'),
+                        'updated_at': bug.get('updated_at'),
+                        'web_url': bug.get('web_url'),
+                        'labels': bug.get('labels', [])
+                    })
+                
+                if formatted_bugs:
+                    self.send_json_response({'issues': formatted_bugs})
+                else:
+                    # 使用模拟数据
+                    mock_data = self.get_mock_projects_stats()
+                    for project in mock_data['projects']:
+                        if project['id'] == project_id:
+                            self.send_json_response({'issues': project.get('bugs', [])})
+                            return
+                    # 如果找不到对应项目的模拟数据，返回空列表
+                    self.send_json_response({'issues': []})
+            else:
+                # 使用模拟数据
+                mock_data = self.get_mock_projects_stats()
+                for project in mock_data['projects']:
+                    if project['id'] == project_id:
+                        self.send_json_response({'issues': project.get('bugs', [])})
+                        return
+                # 如果找不到对应项目的模拟数据，返回空列表
+                self.send_json_response({'issues': []})
         except Exception as e:
             logger.error(f"[获取项目Issues错误] {str(e)}")
-            self.send_json_response({'error': str(e)}, 500)
+            # 使用模拟数据作为最后的后备
+            mock_data = self.get_mock_projects_stats()
+            for project in mock_data['projects']:
+                if project['id'] == project_id:
+                    self.send_json_response({'issues': project.get('bugs', [])})
+                    return
+            # 如果找不到对应项目的模拟数据，返回空列表
+            self.send_json_response({'issues': []}, 500)
     
     def handle_get_project_trends(self, gitlab_project_id: int, params: Dict) -> None:
         """处理获取项目趋势请求"""
         try:
-            days = int(params.get('days', 30))
+            days_param = params.get('days', 30)
+            # 处理'undefined'字符串的情况
+            if isinstance(days_param, str) and days_param == 'undefined':
+                days = 30
+            else:
+                days = int(days_param)
             
             # 从数据库获取项目ID
             db_project = db_manager.get_project_by_gitlab_id(gitlab_project_id)
@@ -820,6 +927,34 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         
         return content_types.get(ext.lower(), 'application/octet-stream')
     
+    def save_mock_data_to_db(self, mock_projects):
+        """将模拟数据保存到数据库"""
+        for project in mock_projects:
+            # 构建项目数据
+            project_data = {
+                'id': project['id'],
+                'name': project['name'],
+                'name_with_namespace': project.get('name_with_namespace'),
+                'description': '模拟项目数据',
+                'web_url': f'http://example.com/{project["name"]}',
+                'created_at': datetime.now().isoformat(),
+                'last_activity_at': datetime.now().isoformat()
+            }
+            
+            # 保存项目信息到数据库
+            db_project_id = db_manager.upsert_project(project_data)
+            
+            if db_project_id:
+                # 保存Bug详情到数据库
+                for bug in project.get('bugs', []):
+                    db_manager.upsert_bug(db_project_id, bug)
+                
+                # 保存统计快照到数据库
+                stats = project.get('stats', {})
+                db_manager.save_bug_snapshot(db_project_id, stats, project.get('bugs', []))
+        
+        logger.info(f"[数据库] 保存了 {len(mock_projects)} 个模拟项目数据")
+
     def get_mock_projects_stats(self) -> Dict[str, Any]:
         """获取模拟项目统计数据"""
         return {
@@ -889,6 +1024,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     """主函数"""
+    global SSL_ENABLED
     if not os.path.exists('public'):
         logger.warning("public目录不存在，将使用当前目录作为静态文件目录")
     

@@ -150,6 +150,10 @@ class UIRenderer {
                     </div>
                 </div>
             </div>
+            <div class="project-actions">
+                <button class="action-button details" onclick="app.showProjectDetails(${project.id})"><span class="action-icon">📋</span>查看详情</button>
+                <button class="action-button trends" onclick="app.showProjectTrends(${project.id})"><span class="action-icon">📈</span>Bug趋势</button>
+            </div>
         `;
 
         setTimeout(() => {
@@ -178,11 +182,44 @@ class UIRenderer {
     renderBugList(bugs, title = 'Bug列表') {
         if (!this.container) return;
 
+        // 检查是否已存在筛选面板，如果存在则保存其状态
+        let isPanelVisible = false;
+        let filterValues = {
+            statusOpen: true,
+            statusClosed: true,
+            priorityHigh: true,
+            priorityMedium: true,
+            priorityLow: true,
+            startDate: '',
+            endDate: ''
+        };
+
+        // 只有当筛选面板已经存在时才保存其状态
+        const existingPanel = document.getElementById('filterPanel');
+        if (existingPanel) {
+            isPanelVisible = existingPanel.style.display !== 'none';
+            
+            // 保存筛选值
+            filterValues = {
+                statusOpen: document.getElementById('filterStatusOpen')?.checked ?? true,
+                statusClosed: document.getElementById('filterStatusClosed')?.checked ?? true,
+                priorityHigh: document.getElementById('filterPriorityHigh')?.checked ?? true,
+                priorityMedium: document.getElementById('filterPriorityMedium')?.checked ?? true,
+                priorityLow: document.getElementById('filterPriorityLow')?.checked ?? true,
+                startDate: document.getElementById('filterStartDate')?.value ?? '',
+                endDate: document.getElementById('filterEndDate')?.value ?? ''
+            };
+        }
+
         const listContainer = this.createElement('div', 'bug-list-container');
         
         listContainer.innerHTML = `
             <div class="bug-list-header">
                 <div class="bug-list-title-section">
+                    <button class="back-button" onclick="app.showDashboard()">
+                        <span class="back-icon">←</span>
+                        返回仪表盘
+                    </button>
                     <h2>${title}</h2>
                     <div class="bug-list-stats">
                         <span class="stat-badge total">总计: ${bugs.length}</span>
@@ -206,16 +243,16 @@ class UIRenderer {
                     </button>
                 </div>
             </div>
-            <div class="filter-panel" id="filterPanel" style="display: none;">
+            <div class="filter-panel" id="filterPanel" style="display: ${isPanelVisible ? 'block' : 'none'};">
                 <div class="filter-section">
                     <h4>状态</h4>
                     <div class="filter-options">
                         <label class="filter-option">
-                            <input type="checkbox" id="filterStatusOpen" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterStatusOpen" onchange="app.applyFilters()" ${filterValues.statusOpen ? 'checked' : ''}>
                             <span>未解决</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterStatusClosed" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterStatusClosed" onchange="app.applyFilters()" ${filterValues.statusClosed ? 'checked' : ''}>
                             <span>已解决</span>
                         </label>
                     </div>
@@ -224,15 +261,15 @@ class UIRenderer {
                     <h4>优先级</h4>
                     <div class="filter-options">
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityHigh" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityHigh" onchange="app.applyFilters()" ${filterValues.priorityHigh ? 'checked' : ''}>
                             <span>严重</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityMedium" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityMedium" onchange="app.applyFilters()" ${filterValues.priorityMedium ? 'checked' : ''}>
                             <span>中等</span>
                         </label>
                         <label class="filter-option">
-                            <input type="checkbox" id="filterPriorityLow" onchange="app.applyFilters()" checked>
+                            <input type="checkbox" id="filterPriorityLow" onchange="app.applyFilters()" ${filterValues.priorityLow ? 'checked' : ''}>
                             <span>轻微</span>
                         </label>
                     </div>
@@ -242,11 +279,11 @@ class UIRenderer {
                     <div class="filter-options">
                         <div class="date-filter">
                             <label>开始日期</label>
-                            <input type="date" id="filterStartDate" onchange="app.applyFilters()">
+                            <input type="date" id="filterStartDate" value="${filterValues.startDate}" onchange="app.applyFilters()">
                         </div>
                         <div class="date-filter">
                             <label>结束日期</label>
-                            <input type="date" id="filterEndDate" onchange="app.applyFilters()">
+                            <input type="date" id="filterEndDate" value="${filterValues.endDate}" onchange="app.applyFilters()">
                         </div>
                     </div>
                 </div>
@@ -259,8 +296,15 @@ class UIRenderer {
             </div>
         `;
 
+        // 替换容器内容
         this.container.innerHTML = '';
         this.container.appendChild(listContainer);
+        
+        // 确保筛选面板的状态正确设置
+        const newPanel = document.getElementById('filterPanel');
+        if (newPanel) {
+            newPanel.style.display = isPanelVisible ? 'block' : 'none';
+        }
     }
 
     renderBugItem(bug) {
@@ -291,7 +335,13 @@ class UIRenderer {
         
         chartContainer.innerHTML = `
             <div class="chart-header">
-                <h2>${title}</h2>
+                <div class="chart-header-left">
+                    <button class="back-button" onclick="app.showDashboard()">
+                        <span class="back-icon">←</span>
+                        返回仪表盘
+                    </button>
+                    <h2>${title}</h2>
+                </div>
                 <div class="prediction-controls">
                     <label for="predictionDays">预测天数:</label>
                     <select id="predictionDays" onchange="app.updatePrediction(this.value)">

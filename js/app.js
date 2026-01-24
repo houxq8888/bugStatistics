@@ -203,7 +203,7 @@ class BugStatsApp {
         const term = searchTerm.toLowerCase().trim();
         
         if (!term) {
-            uiRenderer.renderBugList(this.allBugs, `Bug列表`);
+            this.updateBugList(this.allBugs, `Bug列表`);
             return;
         }
         
@@ -214,7 +214,7 @@ class BugStatsApp {
             return title.includes(term) || id.includes(term) || labels.includes(term);
         });
         
-        uiRenderer.renderBugList(filteredBugs, `Bug列表 (搜索结果: ${filteredBugs.length})`);
+        this.updateBugList(filteredBugs, `Bug列表 (搜索结果: ${filteredBugs.length})`);
     }
 
     toggleFilterPanel() {
@@ -255,7 +255,56 @@ class BugStatsApp {
             return true;
         });
 
-        uiRenderer.renderBugList(filteredBugs, `Bug列表 (筛选结果: ${filteredBugs.length})`);
+        // 只更新bug列表部分，保持筛选面板的状态不变
+        this.updateBugList(filteredBugs, `Bug列表 (筛选结果: ${filteredBugs.length})`);
+    }
+
+    updateBugList(bugs, title = 'Bug列表') {
+        if (!this.container) return;
+
+        // 更新标题和统计信息
+        const titleElement = document.querySelector('.bug-list-title-section h2');
+        if (titleElement) {
+            titleElement.textContent = title;
+        }
+
+        const statsElement = document.querySelector('.bug-list-stats');
+        if (statsElement) {
+            statsElement.innerHTML = `
+                <span class="stat-badge total">总计: ${bugs.length}</span>
+                <span class="stat-badge high">严重: ${bugs.filter(b => b.priority === 'high').length}</span>
+                <span class="stat-badge medium">中等: ${bugs.filter(b => b.priority === 'medium').length}</span>
+                <span class="stat-badge low">轻微: ${bugs.filter(b => b.priority === 'low').length}</span>
+            `;
+        }
+
+        // 更新bug列表
+        const bugListElement = document.querySelector('.bug-list');
+        if (bugListElement) {
+            if (bugs.length > 0) {
+                bugListElement.innerHTML = bugs.map(bug => {
+                    const priorityClass = bug.priority;
+                    const statusClass = bug.status;
+                    return `
+                        <div class="bug-item ${priorityClass} ${statusClass}">
+                            <div class="bug-header">
+                                <span class="bug-id">#${bug.id}</span>
+                                <span class="bug-priority ${priorityClass}">${uiRenderer.getPriorityLabel(bug.priority)}</span>
+                                <span class="bug-status ${statusClass}">${uiRenderer.getStatusLabel(bug.status)}</span>
+                            </div>
+                            <h4 class="bug-title">${bug.title}</h4>
+                            <div class="bug-meta">
+                                <span class="bug-date">创建时间: ${uiRenderer.formatDate(bug.created_at)}</span>
+                                ${bug.updated_at ? `<span class="bug-date">更新时间: ${uiRenderer.formatDate(bug.updated_at)}</span>` : ''}
+                            </div>
+                            ${bug.web_url ? `<a href="${bug.web_url}" target="_blank" class="bug-link">查看详情 →</a>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                bugListElement.innerHTML = '<p class="no-data">暂无数据</p>';
+            }
+        }
     }
 
     resetFilters() {
@@ -274,7 +323,7 @@ class BugStatsApp {
             searchInput.value = '';
         }
 
-        uiRenderer.renderBugList(this.allBugs, `Bug列表`);
+        this.updateBugList(this.allBugs, `Bug列表`);
     }
 
     async showProjectTrends(projectId) {
