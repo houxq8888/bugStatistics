@@ -1507,6 +1507,114 @@ header h1 {
 .delay-5 { animation-delay: 0.5s; }
 .delay-6 { animation-delay: 0.6s; }
 
+/* 项目操作按钮样式 */
+.project-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-button.details {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.action-button.trends {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.action-icon {
+    font-size: 16px;
+}
+
+/* 暗黑模式下的项目操作按钮样式 */
+.dark-mode .project-actions {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 返回按钮样式 */
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.back-button:active {
+    transform: translateY(0);
+}
+
+.back-icon {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* 暗黑模式下的返回按钮样式 */
+.dark-mode .back-button {
+    background: linear-gradient(135deg, #4a56e2 0%, #8b5cf6 100%);
+}
+
+.dark-mode .back-button:hover {
+    box-shadow: 0 4px 12px rgba(74, 86, 226, 0.4);
+}
+
+.dark-mode .action-button.details {
+    background: linear-gradient(135deg, #4a4a6a 0%, #5a5a7a 100%);
+}
+
+.dark-mode .action-button.trends {
+    background: linear-gradient(135deg, #8a4a9b 0%, #9a4a5a 100%);
+}
+
+.dark-mode .action-button:hover {
+    box-shadow: 0 4px 12px rgba(74, 74, 106, 0.4);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .project-actions {
+        flex-direction: column;
+    }
+    
+    .action-button {
+        justify-content: center;
+    }
+}
+
 footer {
     text-align: center;
     padding: 20px;

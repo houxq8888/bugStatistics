@@ -178,20 +178,35 @@ class BugStatsApp {
         uiRenderer.renderProjects(filteredProjects);
     }
 
-    async showProjectDetails(projectId) {
+    showProjectDetails(projectId) {
         this.currentView = 'projectDetails';
         this.renderHeader();
         
+        // 优先从allProjects中获取bug数据，确保与仪表盘数据一致
+        if (this.allProjects) {
+            const project = this.allProjects.find(p => p.id === projectId);
+            if (project && project.bugs) {
+                this.allBugs = project.bugs;
+                uiRenderer.renderBugList(project.bugs, `Bug列表 - ${project.name}`);
+                return;
+            }
+        }
+        
+        // 如果没有找到bug数据，尝试从API获取
         try {
             uiRenderer.showLoading('加载Bug列表...');
-            const result = await dataService.getProjectIssues(projectId, this.filters);
-            
-            if (result && result.issues) {
-                this.allBugs = result.issues;
-                uiRenderer.renderBugList(result.issues, `Bug列表`);
-            } else {
-                uiRenderer.showError('加载数据失败');
-            }
+            dataService.getProjectIssues(projectId, this.filters)
+                .then(result => {
+                    if (result && result.issues) {
+                        this.allBugs = result.issues;
+                        uiRenderer.renderBugList(result.issues, `Bug列表`);
+                    } else {
+                        uiRenderer.showError('加载数据失败');
+                    }
+                })
+                .catch(error => {
+                    uiRenderer.showError(error.message || '加载数据失败');
+                });
         } catch (error) {
             uiRenderer.showError(error.message || '加载数据失败');
         }

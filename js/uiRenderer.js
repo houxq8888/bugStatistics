@@ -150,6 +150,16 @@ class UIRenderer {
                     </div>
                 </div>
             </div>
+            <div class="project-actions">
+                <button class="action-button details" onclick="app.showProjectDetails(${project.id})">
+                    <span class="action-icon">📋</span>
+                    Bug列表
+                </button>
+                <button class="action-button trends" onclick="app.showProjectTrends(${project.id})">
+                    <span class="action-icon">📈</span>
+                    趋势分析
+                </button>
+            </div>
         `;
 
         setTimeout(() => {
@@ -291,15 +301,22 @@ class UIRenderer {
         
         chartContainer.innerHTML = `
             <div class="chart-header">
-                <h2>${title}</h2>
-                <div class="prediction-controls">
-                    <label for="predictionDays">预测天数:</label>
-                    <select id="predictionDays" onchange="app.updatePrediction(this.value)">
-                        <option value="3" ${predictionDays === 3 ? 'selected' : ''}>3天</option>
-                        <option value="7" ${predictionDays === 7 ? 'selected' : ''}>7天</option>
-                        <option value="14" ${predictionDays === 14 ? 'selected' : ''}>14天</option>
-                        <option value="30" ${predictionDays === 30 ? 'selected' : ''}>30天</option>
-                    </select>
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <button class="back-button" onclick="app.showDashboard()">
+                            <span class="back-icon">←</span> 返回仪表盘
+                        </button>
+                        <h2>${title}</h2>
+                    </div>
+                    <div class="prediction-controls">
+                        <label for="predictionDays">预测天数:</label>
+                        <select id="predictionDays" onchange="app.updatePrediction(this.value)">
+                            <option value="3" ${predictionDays === 3 ? 'selected' : ''}>3天</option>
+                            <option value="7" ${predictionDays === 7 ? 'selected' : ''}>7天</option>
+                            <option value="14" ${predictionDays === 14 ? 'selected' : ''}>14天</option>
+                            <option value="30" ${predictionDays === 30 ? 'selected' : ''}>30天</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="chart-canvas">

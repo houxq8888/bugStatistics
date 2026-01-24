@@ -114,7 +114,7 @@ bugStatistics/
 python server.py
 ```
 
-服务器将在 http://localhost:3000 启动
+服务器将在 http://localhost:9000 启动
 
 ### 使用Node.js服务器启动
 
@@ -139,7 +139,7 @@ API_TOKEN = ''  # GitLab API令牌
 在 [server.py](file:///d:/virtualMachine/github/0123/bugStatistics/server.py) 中修改 `PORT` 变量：
 
 ```python
-PORT = 3000  # 修改为所需端口
+PORT = 9000  # 修改为所需端口
 ```
 
 ### 缓存配置
@@ -188,7 +188,7 @@ SSL_KEY_FILE = 'server.key'
 
 ### 首次使用
 
-1. 启动服务器后，在浏览器中访问 http://localhost:3000
+1. 启动服务器后，在浏览器中访问 http://localhost:9000
 2. 点击"注册"创建账号
 3. 使用注册的账号登录系统
 
@@ -458,6 +458,7 @@ docker run -p 3000:3000 -v $(pwd)/data:/app/data bug-stats
 - 修复筛选功能交互问题
 - 修复图表渲染问题
 - 修复移动端布局问题
+- 修复server.py中的SSL_ENABLED变量未定义错误
 
 ### v2.0.0 (2026-01-24)
 
