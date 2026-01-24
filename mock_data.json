@@ -1,0 +1,26 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "name": "Web应用项目",
+      "bugs": [
+        {"id": 1, "title": "登录页面响应缓慢", "priority": "high", "status": "open", "created_at": "2026-01-20"},
+        {"id": 2, "title": "用户头像上传失败", "priority": "high", "status": "open", "created_at": "2026-01-21"},
+        {"id": 3, "title": "数据表格排序功能异常", "priority": "medium", "status": "open", "created_at": "2026-01-21"},
+        {"id": 4, "title": "导航菜单样式错误", "priority": "medium", "status": "closed", "created_at": "2026-01-19"},
+        {"id": 5, "title": "按钮文字显示不全", "priority": "low", "status": "open", "created_at": "2026-01-22"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "移动应用项目",
+      "bugs": [
+        {"id": 6, "title": "应用启动崩溃", "priority": "high", "status": "open", "created_at": "2026-01-20"},
+        {"id": 7, "title": "推送通知不及时", "priority": "medium", "status": "open", "created_at": "2026-01-21"},
+        {"id": 8, "title": "电池消耗过快", "priority": "medium", "status": "open", "created_at": "2026-01-21"},
+        {"id": 9, "title": "界面文字重叠", "priority": "low", "status": "closed", "created_at": "2026-01-19"},
+        {"id": 10, "title": "图标显示模糊", "priority": "low", "status": "open", "created_at": "2026-01-22"}
+      ]
+    }
+  ]
+}
