@@ -3,121 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug统计系统 - Python服务器测试</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Bug统计系统</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Bug统计系统 - Python服务器测试</h1>
-        
-        <div id="status">
-            <div class="status success">
-                <strong>服务器状态:</strong> Python HTTP服务器运行中
-            </div>
-            <div class="status success">
-                <strong>静态文件服务:</strong> 正常
-            </div>
-            <div class="status" id="apiStatus">
-                <strong>API代理服务:</strong> 点击测试按钮验证
+    <div class="time-display" id="currentTime"></div>
+    
+    <header>
+        <div class="header-content">
+            <h1>Bug统计系统</h1>
+            <div class="header-actions">
+                <span class="user-info" id="userInfo">访客</span>
+                <button class="header-button" id="dashboardBtn" onclick="app.showDashboard()">仪表盘</button>
+                <button class="header-button" id="userManagementBtn" onclick="app.showUserManagement()" style="display: none;">用户管理</button>
+                <button class="header-button logout" id="logoutBtn" onclick="app.handleLogout()" style="display: none;">登出</button>
             </div>
         </div>
-        
-        <div style="margin-top: 20px;">
-            <button onclick="testStaticFile()">测试静态文件服务</button>
-            <button onclick="testApiProxy()">测试API代理服务</button>
-        </div>
-        
-        <div id="result" style="margin-top: 20px;"></div>
-    </div>
+    </header>
 
-    <script>
-        function testStaticFile() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<div class="status">测试静态文件服务...</div>';
-            
-            fetch('/')
-                .then(response => {
-                    if (response.ok) {
-                        resultDiv.innerHTML = '<div class="status success">静态文件服务正常 - 状态码: ' + response.status + '</div>';
-                    } else {
-                        resultDiv.innerHTML = '<div class="status error">静态文件服务异常 - 状态码: ' + response.status + '</div>';
-                    }
-                })
-                .catch(error => {
-                    resultDiv.innerHTML = '<div class="status error">静态文件服务错误: ' + error + '</div>';
-                });
-        }
-        
-        function testApiProxy() {
-            const resultDiv = document.getElementById('result');
-            const apiStatus = document.getElementById('apiStatus');
-            
-            resultDiv.innerHTML = '<div class="status">测试API代理服务...</div>';
-            
-            // 测试一个简单的API端点
-            fetch('/api/projects')
-                .then(response => {
-                    if (response.ok) {
-                        apiStatus.className = 'status success';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 正常';
-                        resultDiv.innerHTML = '<div class="status success">API代理服务正常 - 状态码: ' + response.status + '</div>';
-                    } else {
-                        apiStatus.className = 'status error';
-                        apiStatus.innerHTML = '<strong>API代理服务:</strong> 异常 (GitLab可能无法访问)';
-                        resultDiv.innerHTML = '<div class="status error">API代理服务异常 - 状态码: ' + response.status + '</div>';
-                    }
-                })
-                .catch(error => {
-                    apiStatus.className = 'status error';
-                    apiStatus.innerHTML = '<strong>API代理服务:</strong> 错误';
-                    resultDiv.innerHTML = '<div class="status error">API代理服务错误: ' + error + '</div>';
-                });
-        }
-    </script>
+    <main class="container" id="appContainer">
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p class="loading-text">加载中...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Bug统计系统. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/apiClient.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/uiRenderer.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
